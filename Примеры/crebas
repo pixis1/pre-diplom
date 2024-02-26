@@ -1,0 +1,116 @@
+﻿/*==============================================================*/
+/* DBMS name:      Sybase SQL Anywhere 12                       */
+/* Created on:     01.02.2024 14:14:49                          */
+/*==============================================================*/
+
+
+if exists(select 1 from sys.sysforeignkey where role='FK_DRON_REFERENCE_MAP') then
+    alter table DRON
+       delete foreign key FK_DRON_REFERENCE_MAP
+end if;
+
+if exists(select 1 from sys.sysforeignkey where role='FK_DRON_REFERENCE_INFO_DR_') then
+    alter table DRON
+       delete foreign key FK_DRON_REFERENCE_INFO_DR_
+end if;
+
+if exists(select 1 from sys.sysforeignkey where role='FK_INFO_DR__REFERENCE_MAP') then
+    alter table INFO_DR_MAP
+       delete foreign key FK_INFO_DR__REFERENCE_MAP
+end if;
+
+if exists(
+   select 1 from sys.sysconstraint k
+      join sys.systab t on (t.object_id = k.table_object_id and t.table_name='DRON')
+   where
+      k.constraint_type = 'P'
+) then
+    alter table DRON
+   delete primary key
+end if;
+
+drop table if exists DRON;
+
+if exists(
+   select 1 from sys.sysconstraint k
+      join sys.systab t on (t.object_id = k.table_object_id and t.table_name='INFO_DR_MAP')
+   where
+      k.constraint_type = 'P'
+) then
+    alter table INFO_DR_MAP
+   delete primary key
+end if;
+
+drop table if exists INFO_DR_MAP;
+
+if exists(
+   select 1 from sys.sysconstraint k
+      join sys.systab t on (t.object_id = k.table_object_id and t.table_name='MAP')
+   where
+      k.constraint_type = 'P'
+) then
+    alter table MAP
+   delete primary key
+end if;
+
+drop table if exists MAP;
+
+/*==============================================================*/
+/* Table: DRON                                                  */
+/*==============================================================*/
+create table DRON 
+(
+   ID_DR                int                            not null,
+   NAME                 char                           null,
+   MODEL                char                           null
+);
+
+alter table DRON
+   add constraint PK_DRON primary key clustered (ID_DR);
+
+/*==============================================================*/
+/* Table: INFO_DR_MAP                                           */
+/*==============================================================*/
+create table INFO_DR_MAP 
+(
+   ID_IDM               int                            not null,
+   NAME_DR              char                           null,
+   NAME_MAP             char                           null
+);
+
+alter table INFO_DR_MAP
+   add constraint PK_INFO_DR_MAP primary key clustered (ID_IDM);
+
+/*==============================================================*/
+/* Table: MAP                                                   */
+/*==============================================================*/
+create table MAP 
+(
+   ID_MAP               int                            not null,
+   NAME_MAP             char                           null,
+   TIME_MAP             datetime                       null,
+   LEGHT_MAP            char                           null,
+   SPEED_MAP            char                           null
+);
+
+alter table MAP
+   add constraint PK_MAP primary key clustered (ID_MAP);
+
+alter table DRON
+   add constraint FK_DRON_REFERENCE_MAP foreign key (ID_DR)
+      references MAP (ID_MAP)
+      on update restrict
+      on delete restrict;
+
+alter table DRON
+   add constraint FK_DRON_REFERENCE_INFO_DR_ foreign key (ID_DR)
+      references INFO_DR_MAP (NAME_DR)
+      on update restrict
+      on delete restrict;
+
+alter table INFO_DR_MAP
+   add constraint FK_INFO_DR__REFERENCE_MAP foreign key (NAME_MAP)
+      references MAP (NAME_MAP)
+      on update restrict
+      on delete restrict;
+
